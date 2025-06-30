@@ -1,0 +1,9 @@
+{
+  "users": [
+    { "username": "inf581_bot_1", "password": "INF581_BOT_1" },
+    { "username": "inf581_bot_2", "password": "INF581_BOT_2" }
+  ],
+  "toChallenge": "bot_receiver",
+  "local_adress": "127.0.0.1:8000",
+  "authentification_address": "http://localhost:8000/action.php?"
+}
