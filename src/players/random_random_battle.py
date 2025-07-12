@@ -31,5 +31,8 @@ class RandomRandomBattlePlayer(Player):
             username=username,
         )
 
-    async def select_move(self, battle: Battle, *, trapped: bool = False):
-        await self.random_move(battle=battle, trapped=trapped)
+    async def select_move(self, battle: Battle, *, trapped: bool = False) -> str:
+        print(f"[DEBUG] RandomRandomBattlePlayer.select_move called for {self.username}")
+        result = await self.random_move(battle=battle, trapped=trapped)
+        print(f"[DEBUG] RandomRandomBattlePlayer.select_move returning: {result}")
+        return result

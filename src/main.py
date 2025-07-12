@@ -12,7 +12,7 @@ async def main():
     perf = await model_manager.test(
         number_of_battles=1,  # 1試合のみ
         concurrent_battles=1,  # 同時バトル数1
-        log_messages=True,    # ログを有効化
+        log_messages=False,    # ログを無効化
         opponent="random"     # ランダム対戦相手
     )
     print(f"\n{'*'*15} Performance: {perf*100:2.1f}% {'*'*15}\n")

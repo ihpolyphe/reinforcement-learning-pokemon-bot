@@ -116,15 +116,18 @@ class Battle:
         while battle_tag.endswith("\n"):
             battle_tag = battle_tag[:-1]
 
-        # Teams attributes
+        # battle_tagが数字だけの場合はbattle-gen9randombattle-xxxxxx形式に変換
+        if battle_tag.isdigit():
+            battle_tag = f"battle-gen9randombattle-{battle_tag}"
+        elif battle_tag.startswith(">"):
+            battle_tag = battle_tag[1:]
+        self._battle_tag = battle_tag
+
+        # Teams attributes（ここが抜けていたので追加）
         self._player_team = {}
         self._opponent_team = {}
         self._player_team_size = None
         self._opponent_team_size = None
-
-        if battle_tag.startswith(">"):
-            battle_tag = battle_tag[1:]
-        self._battle_tag = battle_tag
 
         # End of battle attributes
         self._finished = False
@@ -197,16 +200,16 @@ class Battle:
             if isinstance(message[0], str) and "|" in message[0]:
                 message = message[0].split("|")
 
-            print(f"[DEBUG] Parsing message: {'|'.join(message)}")
-            print(f"[DEBUG] Message length: {len(message)}")
+            # print(f"[DEBUG] Parsing message: {'|'.join(message)}")
+            # print(f"[DEBUG] Message length: {len(message)}")
 
             if len(message) <= 1:
                 print(f"[WARNING] Message too short: {message}")
                 return
 
-            if message[1] in self.ACTIONS_TO_IGNORE:
+            if len(message) > 1 and message[1] in self.ACTIONS_TO_IGNORE:
                 return
-            elif message[1] == "switch":
+            elif len(message) > 1 and message[1] == "switch":
                 if len(message) > 2 and message[2][0:2] == self._player_role:
                     for pokemon in self._player_team.values():
                         pokemon.active = False
@@ -216,58 +219,60 @@ class Battle:
                 if len(message) > 2:
                     pokemon = self._get_pokemon_from_reference(message[2])
                     pokemon.update_from_switch(message)
-            elif message[1] == "gametype":
+            elif len(message) > 1 and message[1] == "gametype":
                 if len(message) > 2:
                     self._gametype = message[2]
-            elif message[1] == "teamsize":
+            elif len(message) > 1 and message[1] == "teamsize":
                 if len(message) > 3:
                     if message[2] == self._player_role:
                         self._player_team_size = int(message[3])
                     else:
                         self._opponent_team_size = int(message[3])
-            elif message[1] == "player":
+            elif len(message) > 1 and message[1] == "player":
                 if len(message) > 3 and message[3] == self._player_name.lower():
-                    if message[2] == "p2":
+                    if len(message) > 2 and message[2] == "p2":
                         self.player_is_p2()
-                    elif message[2] == "p1":
+                    elif len(message) > 2 and message[2] == "p1":
                         self.player_is_p1()
-            elif message[1] == "turn":
-                print(f"[DEBUG] Turn {message[2]} for battle {self.battle_tag}")
-            elif message[1] == "start":
+            elif len(message) > 1 and message[1] == "turn":
+                if len(message) > 2:
+                    print(f"[DEBUG] Turn {message[2]} for battle {self.battle_tag}")
+            elif len(message) > 1 and message[1] == "start":
                 print(f"[DEBUG] Battle started: {self.battle_tag}")
-            elif message[1] == "move":
+            elif len(message) > 1 and message[1] == "move":
                 if len(message) > 3:
                     pokemon = self._get_pokemon_from_reference(message[2])
                     pokemon.update_from_move(message[3])
-            elif message[1] == "faint":
+            elif len(message) > 1 and message[1] == "faint":
                 if len(message) > 2:
                     pokemon = self._get_pokemon_from_reference(message[2])
                     pokemon.set_status("fnt")
-            elif message[1] == "win":
+            elif len(message) > 1 and message[1] == "win":
                 if len(message) > 2:
                     self.won_by(message[2])
-            elif message[1] == "-ability":
+            elif len(message) > 1 and message[1] == "-ability":
                 if len(message) > 3:
                     pokemon = self._get_pokemon_from_reference(message[2])
                     print(f"[DEBUG] Ability activated: {message[3]} for {pokemon.ident}")
-            elif message[1] == "-unboost":
+            elif len(message) > 1 and message[1] == "-unboost":
                 if len(message) > 4:
                     pokemon = self._get_pokemon_from_reference(message[2])
                     print(f"[DEBUG] Stat unboost: {message[3]} by {message[4]} for {pokemon.ident}")
-            elif message[1] == "-weather":
+            elif len(message) > 1 and message[1] == "-weather":
                 if len(message) > 2:
                     print(f"[DEBUG] Weather changed to: {message[2]}")
-            elif message[1] == "-fieldstart":
+            elif len(message) > 1 and message[1] == "-fieldstart":
                 if len(message) > 2:
                     print(f"[DEBUG] Field effect started: {message[2]}")
                     if len(message) > 3 and message[3].startswith("[from] ability:"):
                         ability = message[3].split(": ")[1]
                         print(f"[DEBUG] Field effect from ability: {ability}")
-            elif message[1] == "-fieldend":
+            elif len(message) > 1 and message[1] == "-fieldend":
                 if len(message) > 2:
                     print(f"[DEBUG] Field effect ended: {message[2]}")
             else:
-                print(f"[DEBUG] Unhandled message type: {message[1]}")
+                if len(message) > 1:
+                    print(f"[DEBUG] Unhandled message type: {message[1]}")
         except Exception as e:
             print(f"[ERROR] Error in parse_message: {e}")
             print(f"[DEBUG] Message that caused error: {'|'.join(message)}")
@@ -301,24 +306,6 @@ class Battle:
             self.can_z_move = False
             self.trapped = False
 
-            if "active" in request:
-                active_request = request["active"][0]
-                if "moves" in active_request:
-                    for move in active_request["moves"]:
-                        if "id" in move:
-                            if self._player_active_pokemon:
-                                self._player_active_pokemon.add_move(move["id"])
-                            self.available_moves.append((len(self.available_moves) + 1, move))
-                        else:
-                            print(f"[WARNING] Move without id: {move}")
-
-                if "trapped" in active_request and active_request["trapped"]:
-                    self.trapped = True
-                if "canMegaEvo" in active_request and active_request["canMegaEvo"]:
-                    self.can_mega_evolve = True
-                if "canZMove" in active_request:
-                    self.can_z_move = active_request["canZMove"]
-
             if "side" in request:
                 side_request = request["side"]
                 if "pokemon" in side_request:
@@ -335,14 +322,41 @@ class Battle:
 
                             if pokemon.get("active", False):
                                 self._player_active_pokemon = self._player_team[pokemon_ident]
+                                self._player_team[pokemon_ident].active = True
+                                print(f"[DEBUG] Set active pokemon: {pokemon_ident}")
                             elif not self.trapped and pokemon.get("condition", "") != "0 fnt":
                                 self.available_switches.append((len(self.available_switches) + 1, pokemon_ident))
                         else:
                             print(f"[WARNING] Pokemon without ident or details: {pokemon}")
 
+            if "active" in request:
+                active_request = request["active"][0]
+                if "moves" in active_request:
+                    for move in active_request["moves"]:
+                        if "id" in move:
+                            if self._player_active_pokemon:
+                                self._player_active_pokemon.update_from_move(move["id"])
+                                print(f"[DEBUG] Added move {move['id']} to {self._player_active_pokemon.ident}")
+                            self.available_moves.append((len(self.available_moves) + 1, move))
+                        else:
+                            print(f"[WARNING] Move without id: {move}")
+
+                if "trapped" in active_request and active_request["trapped"]:
+                    self.trapped = True
+                if "canMegaEvo" in active_request and active_request["canMegaEvo"]:
+                    self.can_mega_evolve = True
+                if "canZMove" in active_request:
+                    self.can_z_move = active_request["canZMove"]
+
             self._turn += 1
             print(f"[DEBUG] Turn updated to {self._turn}")
             print(f"[DEBUG] Parsed request for battle {self.battle_tag}")
+            print(f"[DEBUG] After parse_request: _player_active_pokemon={self._player_active_pokemon}")
+            print(f"[DEBUG] After parse_request: active_pokemon={self.active_pokemon}")
+            if self._player_active_pokemon:
+                print(f"[DEBUG] Active pokemon moves: {list(self._player_active_pokemon.moves.keys())}")
+            if self.active_pokemon:
+                print(f"[DEBUG] Active pokemon moves (via property): {list(self.active_pokemon.moves.keys())}")
         except Exception as e:
             print(f"[ERROR] Error in parse_request: {e}")
             print(f"[DEBUG] Request that caused error: {request}")
@@ -420,10 +434,19 @@ class Battle:
 
     @property
     def battle_num(self) -> int:
-        """
-        int: battle's number
-        """
-        return int(self._battle_tag.split('-')[2])
+        parts = self._battle_tag.split('-')
+        if len(parts) > 2:
+            return int(parts[2])
+        elif len(parts) == 1:
+            # バトル番号だけの場合（例：122938）
+            try:
+                return int(parts[0])
+            except ValueError:
+                print(f"[ERROR] Invalid battle number format: {parts[0]}")
+                return -1
+        else:
+            print(f"[ERROR] Invalid battle_tag format: {self._battle_tag}")
+            return -1
 
     @property
     def dic_state(self) -> dict:

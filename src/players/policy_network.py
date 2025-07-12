@@ -133,6 +133,11 @@ class PolicyNetwork(ModelManagerTF):
             x = np.concatenate((x, self.pokemon_to_feature(pokemon)))
         x = np.concatenate((x, self.pokemon_to_feature(opponent_active_pokemon)))
 
+        # 75次元にスライスまたはパディング
+        if x.shape[0] > 75:
+            x = x[:75]
+        elif x.shape[0] < 75:
+            x = np.pad(x, (0, 75 - x.shape[0]), 'constant')
         return x
 
 

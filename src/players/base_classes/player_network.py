@@ -90,28 +90,33 @@ class PlayerNetwork(ABC):
         await self.send_message(f"/avatar {avatar_id}")
 
     async def listen(self) -> None:
-        # try:
         async with websockets.connect(self.websocket_address) as websocket:
             self._websocket = websocket
             while not self.should_die:
-                # try:
-                message = await websocket.recv()
-                if self._log_messages_in_console:
-                    print(f"\n{self.username} << {message}")
-                await self.manage_message(message)
-                # except websockets.exceptions.ConnectionClosedOK:
-                #     print(f"[INFO] Connection closed normally for {self.username}")
-                #     break
-                # except websockets.exceptions.ConnectionClosedError as e:
-                #     print(f"[ERROR] Connection closed unexpectedly for {self.username}: {e}")
-                #     break
-                # except Exception as e:
-                #     print(f"[ERROR] Unexpected error in listen loop for {self.username}: {e}")
-                #     break
-        # except Exception as e:
-        #     print(f"[ERROR] Failed to establish WebSocket connection for {self.username}: {e}")
-        # finally:
-        #     print(f"[INFO] Listen loop ended for {self.username}")
+                print(f"[DEBUG] should_die={self.should_die} for {self.username}")
+                try:
+                    message = await websocket.recv()
+                    print(f"[DEBUG] Received message: {message}")
+                    if self._log_messages_in_console:
+                        print(f"\n{self.username} << {message}")
+                    await self.manage_message(message)
+                except websockets.exceptions.ConnectionClosedOK:
+                    print(f"[INFO] Connection closed normally for {self.username}")
+                    print(f"[DEBUG] Listen loop break: ConnectionClosedOK for {self.username}")
+                    break
+                except websockets.exceptions.ConnectionClosedError as e:
+                    print(f"[ERROR] Connection closed unexpectedly for {self.username}: {e}")
+                    print(f"[DEBUG] Listen loop break: ConnectionClosedError for {self.username}")
+                    break
+                except Exception as e:
+                    print(f"[ERROR] Unexpected error in listen loop for {self.username}: {e}")
+                    import traceback
+                    print(traceback.format_exc())
+                    print(f"[DEBUG] Listen loop break: Exception for {self.username}")
+                    break
+                finally:
+                    print(f"[INFO] Listen loop ended for {self.username}")
+            print(f"[DEBUG] Exited listen loop for {self.username}, should_die={self.should_die}")
 
     async def manage_message(self, message: str) -> None:
         """
@@ -126,22 +131,25 @@ class PlayerNetwork(ABC):
             print("[WARNING] Empty message after split")
             return
 
-        print(f"[DEBUG] Received message split_message[0]: {split_message[0]}")
+        # print(f"[DEBUG] Received message split_message[0]: {split_message[0]}")
         
         # メッセージの長さを確認
         if len(split_message) > 1:
-            print(f"[DEBUG] Received message split_message[1]: {split_message[1]}")
+            pass
+            # print(f"[DEBUG] Received message split_message[1]: {split_message[1]}")
         else:
             print("[DEBUG] Message too short, skipping")
             return
             
         if len(split_message) > 2:
-            print(f"[DEBUG] Received message split_message[2]: {split_message[2]}")
+            pass
+            # print(f"[DEBUG] Received message split_message[2]: {split_message[2]}")
         if len(split_message) > 3:
-            print(f"[DEBUG] Received message split_message[3]: {split_message[3]}")
+            pass
+            # print(f"[DEBUG] Received message split_message[3]: {split_message[3]}")
         if len(split_message) > 4:
-            print(f"[DEBUG] Received message split_message[4]: {split_message[4]}")
-            
+            # print(f"[DEBUG] Received message split_message[4]: {split_message[4]}")
+            pass
         # challstr confirms that we are connected to the server
         # we can therefore login
         if split_message[1] == "challstr":
@@ -149,14 +157,14 @@ class PlayerNetwork(ABC):
                 print("[ERROR] Invalid challstr message format")
                 return
             conf_1, conf_2 = split_message[2], split_message[3]
-            print(f"[DEBUG] Received challstr, attempting login for {self.username}")
+            # print(f"[DEBUG] Received challstr, attempting login for {self.username}")
             await self._log_in(conf_1, conf_2)
 
         elif split_message[1] == 'updateuser':
             if len(split_message) < 3:
                 print("[ERROR] Invalid updateuser message format")
                 return
-            print(f"[DEBUG] Received updateuser: {split_message[2]}")
+            # print(f"[DEBUG] Received updateuser: {split_message[2]}")
             if split_message[2].strip() == self.username:
                 self._logged_in = True
                 print(f"[INFO] Logged in as {self.username}")
@@ -167,7 +175,7 @@ class PlayerNetwork(ABC):
                 return
             try:
                 response = json.loads(split_message[2])
-                print(f"[DEBUG] Received challenges: {response}")
+                # print(f"[DEBUG] Received challenges: {response}")
                 for user, format in response.get("challengesFrom", {}).items():
                     if format == self.format:
                         print(f"[INFO] Accepting challenge from {user}")
@@ -182,7 +190,7 @@ class PlayerNetwork(ABC):
             if len(split_message) < 3:
                 print("[ERROR] Invalid popup message format")
                 return
-            print(f"[DEBUG] Received popup: {split_message[2]}")
+            # print(f"[DEBUG] Received popup: {split_message[2]}")
             if "already challenging" in split_message[2]:
                 self._waiting_start = False  # チャレンジが失敗したらチャレンジ待ち状態を解除
         elif split_message[1] == "pm":
@@ -212,6 +220,9 @@ class PlayerNetwork(ABC):
     async def send_message(
         self, message: str, room: str = "", message_2: str = None
     ) -> None:
+        # 従来通り1行で送信
+        if room and not room.startswith('>'):
+            room = '>' + room
         if message_2:
             to_send = "|".join([room, message, message_2])
         else:
@@ -220,7 +231,29 @@ class PlayerNetwork(ABC):
             print(f"\n{self.username} >> {to_send}")
         print(f"[DEBUG] Sending message: {to_send}")
         async with self._lock:
-            await self._websocket.send(to_send)
+            await self._websocket.send(to_send + "\n")
+
+    async def send_room_message(
+        self, message: str, room: str, message_2: str = None
+    ) -> None:
+        # バトルルーム内コマンド専用：2行送信方式
+        if room and not room.startswith('>'):
+            room = '>' + room
+        async with self._lock:
+            # 1行目: room名だけ
+            await self._websocket.send(room + "\n")
+            if self._log_messages_in_console:
+                print(f"\n{self.username} >> {room}")
+            print(f"[DEBUG] Sending room line: {room}")
+            # 2行目: コマンド本体
+            if message_2:
+                to_send = "|".join([message, message_2])
+            else:
+                to_send = message
+            await self._websocket.send(to_send + "\n")
+            if self._log_messages_in_console:
+                print(f"\n{self.username} >> {to_send}")
+            print(f"[DEBUG] Sending message line: {to_send}")
 
     @property
     @abstractmethod

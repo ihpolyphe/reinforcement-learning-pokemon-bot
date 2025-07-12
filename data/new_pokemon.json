@@ -3560,7 +3560,7 @@
         "eggGroups": ["Human-Like"]
     },
     "greattusk": {
-        "num": 984,
+        "num": 986,
         "species": "Great Tusk",
         "types": ["Ground", "Fighting"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -3575,7 +3575,7 @@
         "abilities": { "0": "Protosynthesis" },
         "heightm": 2.2,
         "weightkg": 320,
-        "color": "Purple",
+        "color": "Gray",
         "eggGroups": ["Undiscovered"]
     },
     "screamtail": {
@@ -3597,27 +3597,8 @@
         "color": "Pink",
         "eggGroups": ["Undiscovered"]
     },
-    "brutebonnet": {
-        "num": 981,
-        "species": "Brute Bonnet",
-        "types": ["Grass", "Dark"],
-        "genderRatio": { "M": 0, "F": 0 },
-        "baseStats": {
-            "hp": 111,
-            "atk": 127,
-            "def": 99,
-            "spa": 79,
-            "spd": 99,
-            "spe": 55
-        },
-        "abilities": { "0": "Protosynthesis" },
-        "heightm": 1.2,
-        "weightkg": 21,
-        "color": "Green",
-        "eggGroups": ["Undiscovered"]
-    },
     "fluttermane": {
-        "num": 982,
+        "num": 987,
         "species": "Flutter Mane",
         "types": ["Ghost", "Fairy"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -3636,7 +3617,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "slitherwing": {
-        "num": 983,
+        "num": 988,
         "species": "Slither Wing",
         "types": ["Bug", "Fighting"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -3655,7 +3636,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "sandy shocks": {
-        "num": 984,
+        "num": 989,
         "species": "Sandy Shocks",
         "types": ["Electric", "Ground"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -3674,7 +3655,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "irontreads": {
-        "num": 985,
+        "num": 990,
         "species": "Iron Treads",
         "types": ["Ground", "Steel"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -3693,7 +3674,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "ironbundle": {
-        "num": 986,
+        "num": 991,
         "species": "Iron Bundle",
         "types": ["Ice", "Water"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -3712,7 +3693,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "ironhands": {
-        "num": 987,
+        "num": 992,
         "species": "Iron Hands",
         "types": ["Fighting", "Electric"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -3731,7 +3712,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "ironjugulis": {
-        "num": 988,
+        "num": 993,
         "species": "Iron Jugulis",
         "types": ["Dark", "Flying"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -3750,7 +3731,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "ironmoth": {
-        "num": 989,
+        "num": 994,
         "species": "Iron Moth",
         "types": ["Fire", "Poison"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -3769,7 +3750,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "ironthorns": {
-        "num": 990,
+        "num": 995,
         "species": "Iron Thorns",
         "types": ["Rock", "Electric"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -3788,7 +3769,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "frigibax": {
-        "num": 991,
+        "num": 996,
         "species": "Frigibax",
         "types": ["Dragon", "Ice"],
         "genderRatio": { "M": 0.5, "F": 0.5 },
@@ -3808,7 +3789,7 @@
         "eggGroups": ["Dragon", "Mineral"]
     },
     "arctibax": {
-        "num": 992,
+        "num": 997,
         "species": "Arctibax",
         "types": ["Dragon", "Ice"],
         "genderRatio": { "M": 0.5, "F": 0.5 },
@@ -3830,7 +3811,7 @@
         "eggGroups": ["Dragon", "Mineral"]
     },
     "baxcalibur": {
-        "num": 993,
+        "num": 998,
         "species": "Baxcalibur",
         "types": ["Dragon", "Ice"],
         "genderRatio": { "M": 0.5, "F": 0.5 },
@@ -3851,7 +3832,7 @@
         "eggGroups": ["Dragon", "Mineral"]
     },
     "gimmighoul": {
-        "num": 994,
+        "num": 999,
         "species": "Gimmighoul",
         "types": ["Ghost"],
         "genderRatio": { "M": 0.5, "F": 0.5 },
@@ -3871,7 +3852,7 @@
         "eggGroups": ["Amorphous"]
     },
     "gholdengo": {
-        "num": 995,
+        "num": 1000,
         "species": "Gholdengo",
         "types": ["Steel", "Ghost"],
         "genderRatio": { "M": 0.5, "F": 0.5 },
@@ -3892,7 +3873,7 @@
         "eggGroups": ["Amorphous"]
     },
     "wochien": {
-        "num": 996,
+        "num": 1001,
         "species": "Wo-Chien",
         "types": ["Dark", "Grass"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -3911,7 +3892,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "chienpao": {
-        "num": 997,
+        "num": 1002,
         "species": "Chien-Pao",
         "types": ["Dark", "Ice"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -3930,7 +3911,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "tinglu": {
-        "num": 998,
+        "num": 1003,
         "species": "Ting-Lu",
         "types": ["Dark", "Ground"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -3949,7 +3930,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "chienyu": {
-        "num": 999,
+        "num": 1004,
         "species": "Chi-Yu",
         "types": ["Dark", "Fire"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -3968,7 +3949,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "roaringmoon": {
-        "num": 1000,
+        "num": 1005,
         "species": "Roaring Moon",
         "types": ["Dragon", "Dark"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -3987,7 +3968,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "ironvaliant": {
-        "num": 1001,
+        "num": 1006,
         "species": "Iron Valiant",
         "types": ["Fairy", "Fighting"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4006,7 +3987,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "koraidon": {
-        "num": 1002,
+        "num": 1007,
         "species": "Koraidon",
         "types": ["Fighting", "Dragon"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4025,7 +4006,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "miraidon": {
-        "num": 1003,
+        "num": 1008,
         "species": "Miraidon",
         "types": ["Electric", "Dragon"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4044,7 +4025,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "walkingwake": {
-        "num": 1004,
+        "num": 1009,
         "species": "Walking Wake",
         "types": ["Water", "Dragon"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4063,7 +4044,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "ironleaves": {
-        "num": 1005,
+        "num": 1010,
         "species": "Iron Leaves",
         "types": ["Grass", "Psychic"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4082,7 +4063,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "dipplin": {
-        "num": 1006,
+        "num": 1011,
         "species": "Dipplin",
         "types": ["Grass", "Dragon"],
         "genderRatio": { "M": 0.5, "F": 0.5 },
@@ -4103,7 +4084,7 @@
         "eggGroups": ["Grass", "Dragon"]
     },
     "poltchageist": {
-        "num": 1007,
+        "num": 1012,
         "species": "Poltchageist",
         "types": ["Grass", "Ghost"],
         "genderRatio": { "M": 0.5, "F": 0.5 },
@@ -4123,7 +4104,7 @@
         "eggGroups": ["Mineral", "Amorphous"]
     },
     "sinistcha": {
-        "num": 1008,
+        "num": 1013,
         "species": "Sinistcha",
         "types": ["Grass", "Ghost"],
         "genderRatio": { "M": 0.5, "F": 0.5 },
@@ -4144,7 +4125,7 @@
         "eggGroups": ["Mineral", "Amorphous"]
     },
     "okidogi": {
-        "num": 1009,
+        "num": 1014,
         "species": "Okidogi",
         "types": ["Poison", "Fighting"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4163,7 +4144,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "munkidori": {
-        "num": 1010,
+        "num": 1015,
         "species": "Munkidori",
         "types": ["Poison", "Psychic"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4182,7 +4163,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "fezandipiti": {
-        "num": 1011,
+        "num": 1016,
         "species": "Fezandipiti",
         "types": ["Poison", "Fairy"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4201,7 +4182,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "ogerpon": {
-        "num": 1012,
+        "num": 1017,
         "species": "Ogerpon",
         "types": ["Grass"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4220,7 +4201,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "ogerpontealtera": {
-        "num": 1013,
+        "num": 1018,
         "species": "Ogerpon-Teal",
         "types": ["Grass"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4239,7 +4220,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "ogerponwellspring": {
-        "num": 1014,
+        "num": 1019,
         "species": "Ogerpon-Wellspring",
         "types": ["Grass", "Water"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4258,7 +4239,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "ogerponhearthflame": {
-        "num": 1015,
+        "num": 1020,
         "species": "Ogerpon-Hearthflame",
         "types": ["Grass", "Fire"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4277,7 +4258,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "ogerponcornerstone": {
-        "num": 1016,
+        "num": 1021,
         "species": "Ogerpon-Cornerstone",
         "types": ["Grass", "Rock"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4296,7 +4277,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "hydrapple": {
-        "num": 1017,
+        "num": 1022,
         "species": "Hydrapple",
         "types": ["Grass", "Dragon"],
         "genderRatio": { "M": 0.5, "F": 0.5 },
@@ -4317,7 +4298,7 @@
         "eggGroups": ["Grass", "Dragon"]
     },
     "gougingfire": {
-        "num": 1018,
+        "num": 1023,
         "species": "Gouging Fire",
         "types": ["Fire", "Dragon"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4336,7 +4317,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "ragingbolt": {
-        "num": 1019,
+        "num": 1024,
         "species": "Raging Bolt",
         "types": ["Electric", "Dragon"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4355,7 +4336,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "ironboulder": {
-        "num": 1020,
+        "num": 1025,
         "species": "Iron Boulder",
         "types": ["Rock", "Psychic"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4374,7 +4355,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "ironcrown": {
-        "num": 1021,
+        "num": 1026,
         "species": "Iron Crown",
         "types": ["Steel", "Psychic"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4393,7 +4374,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "terapagos": {
-        "num": 1022,
+        "num": 1027,
         "species": "Terapagos",
         "types": ["Normal"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4412,7 +4393,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "terapagosstellar": {
-        "num": 1023,
+        "num": 1028,
         "species": "Terapagos-Stellar",
         "types": ["Normal"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4431,7 +4412,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "pecharunt": {
-        "num": 1024,
+        "num": 1029,
         "species": "Pecharunt",
         "types": ["Poison", "Ghost"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4450,7 +4431,7 @@
         "eggGroups": ["Undiscovered"]
     },
     "deoxysattack": {
-        "num": 1025,
+        "num": 1030,
         "species": "Deoxys-Attack",
         "types": ["Psychic"],
         "genderRatio": { "M": 0, "F": 0 },
@@ -4466,6 +4447,25 @@
         "heightm": 1.7,
         "weightkg": 60.8,
         "color": "Red",
+        "eggGroups": ["Undiscovered"]
+    },
+    "brutebonnet": {
+        "num": 989,
+        "species": "Brute Bonnet",
+        "types": ["Grass", "Dark"],
+        "genderRatio": { "M": 0, "F": 0 },
+        "baseStats": {
+            "hp": 111,
+            "atk": 127,
+            "def": 99,
+            "spa": 79,
+            "spd": 99,
+            "spe": 55
+        },
+        "abilities": { "0": "Protosynthesis" },
+        "heightm": 1.2,
+        "weightkg": 21,
+        "color": "Green",
         "eggGroups": ["Undiscovered"]
     }
 } 

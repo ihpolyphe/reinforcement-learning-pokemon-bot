@@ -85,7 +85,7 @@ class ModelManager(ABC):
                 log_messages_in_console=log_messages,
                 mode="challenge",
                 password=CONFIG["users"][0]["password"],
-                server_address=CONFIG["local_adress"],
+                server_address=CONFIG["server_address"],
                 target_battles=number_of_battles,
                 to_target=CONFIG["users"][1]["username"],
                 username=CONFIG["users"][0]["username"],
@@ -96,7 +96,7 @@ class ModelManager(ABC):
                 max_concurrent_battles=concurrent_battles,
                 mode="wait",
                 password=CONFIG["users"][1]["password"],
-                server_address=CONFIG["local_adress"],
+                server_address=CONFIG["server_address"],
                 target_battles=number_of_battles,
                 username=CONFIG["users"][1]["username"],
             ),
@@ -235,7 +235,7 @@ class ModelManager(ABC):
                 log_messages_in_console=log_messages,
                 mode="challenge",
                 password=CONFIG["users"][0]["password"],
-                server_address=CONFIG["local_adress"],
+                server_address=CONFIG["server_address"],
                 target_battles=number_of_battles,
                 to_target=CONFIG["users"][1]["username"],
                 username=CONFIG["users"][0]["username"],
@@ -249,7 +249,7 @@ class ModelManager(ABC):
                     max_concurrent_battles=concurrent_battles,
                     mode="wait",
                     password=CONFIG["users"][1]["password"],
-                    server_address=CONFIG["local_adress"],
+                    server_address=CONFIG["server_address"],
                     target_battles=number_of_battles,
                     username=CONFIG["users"][1]["username"],
                 ))
@@ -298,7 +298,7 @@ class ModelManager(ABC):
                     log_messages_in_console=log_messages,
                     mode="challenge",
                     password=CONFIG["users"][0]["password"],
-                    server_address=CONFIG["local_adress"],
+                    server_address=CONFIG["server_address"],
                     target_battles=number_of_battles,
                     to_target=CONFIG["users"][1]["username"],
                     username=CONFIG["users"][0]["username"],
@@ -310,7 +310,7 @@ class ModelManager(ABC):
                     max_concurrent_battles=concurrent_battles,
                     mode="wait",
                     password=CONFIG["users"][1]["password"],
-                    server_address=CONFIG["local_adress"],
+                    server_address=CONFIG["server_address"],
                     target_battles=number_of_battles,
                     username=CONFIG["users"][1]["username"],
                 ),
@@ -411,7 +411,7 @@ class _MLRandomBattlePlayer(Player):
 
         # Move name as key, order id as value
         available_moves = {
-            el[1]["id"]: el[0] for el in battle.available_moves if "id" in el[1]
+            el[1]["id"].lower().replace(" ", ""): el[0] for el in battle.available_moves if "id" in el[1]
         }
 
         # Move names
@@ -441,19 +441,21 @@ class _MLRandomBattlePlayer(Player):
 
         # Setting attacks information
         for j, move in enumerate(battle.active_moves):
-            if move not in available_moves:
+            move_id = move.lower().replace(" ", "")
+            if move_id not in available_moves:
                 commands.append("")
                 commands.append("")
                 commands.append("")
                 moves_probs[j, :] = 0
             else:
-                if move not in available_z_moves:
+                if move_id not in available_z_moves:
                     moves_probs[j, 1] = 0
                 if not battle.can_mega_evolve:
                     moves_probs[j, 2] = 0
-                commands.append(f"/choose move {available_moves[move]}")
-                commands.append(f"/choose move {available_moves[move]} zmove")
-                commands.append(f"/choose move {available_moves[move]} mega")
+                # 正しいフォーマットでコマンド生成（ターゲット指定なし）
+                commands.append(f"/choose move {move_id}")
+                commands.append(f"/choose move {move_id} zmove")
+                commands.append(f"/choose move {move_id} mega")
 
         for i in range(len(battle.active_moves), 4):
             moves_probs[i, :] = 0
@@ -489,9 +491,8 @@ class _MLRandomBattlePlayer(Player):
             try:
                 if commands[choice] == "":
                     raise ValueError("wtf message")
-                await self.send_message(
+                await self.send_room_message(
                     message=commands[choice],
-                    message_2=str(battle.turn_sent),
                     room=battle.battle_tag,
                 )
                 return choice
