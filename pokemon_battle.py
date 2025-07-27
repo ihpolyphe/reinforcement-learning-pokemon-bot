@@ -2,8 +2,9 @@ import asyncio
 import websockets
 import json
 import re
+import random
 
-async def showdown_bot(username, password, opponent, is_challenger, battle_format):
+async def showdown_bot(username, password, opponent, is_challenger, battle_format, select_type="max_damage"):
     uri = "ws://127.0.0.1:8000/showdown/websocket"
     battle_tag = None
     joined_battle = False
@@ -72,23 +73,53 @@ async def showdown_bot(username, password, opponent, is_challenger, battle_forma
                         request_json = resp.split("|request|")[1]
                         request = json.loads(request_json)
                         if "active" in request:
-                            # 技選択処理
                             moves = request["active"][0]["moves"]
-                            # 有効な技のみをフィルタリング
                             valid_moves = [move for move in moves if not move.get("disabled", False)]
-                            if valid_moves:
-                                move = valid_moves[0]  # 最初の有効な技を選択
-                                move_id = move["id"]
-                                target = move.get("target", "")
-                                if target in ["normal", "adjacentFoe", "adjacentAllyOrSelf", "adjacentAlly", "adjacentFoeOrAlly"]:
-                                    move_line = f"{battle_tag}|/choose move {move_id} 1\n"
+                            if select_type == "max_damage":
+                                if valid_moves:
+                                    move = select_random_move(valid_moves, select_type="max_damage")
+                                    move_id = move["id"]
+                                    target = move.get("target", "")
+                                    if target in ["normal", "adjacentFoe", "adjacentAllyOrSelf", "adjacentAlly", "adjacentFoeOrAlly"]:
+                                        move_line = f"{battle_tag}|/choose move {move_id} 1\n"
+                                    else:
+                                        move_line = f"{battle_tag}|/choose move {move_id}\n"
+                                    turn_count += 1
+                                    print(f"[{username}] [ターン{turn_count}] 送信コマンド: {move_line.strip()}")
+                                    await websocket.send(move_line)
                                 else:
-                                    move_line = f"{battle_tag}|/choose move {move_id}\n"
-                                turn_count += 1
-                                print(f"[{username}] [ターン{turn_count}] 送信コマンド: {move_line.strip()}")
-                                await websocket.send(move_line)
-                            else:
-                                print(f"[{username}] 有効な技がありません")
+                                    print(f"[{username}] 有効な技も交代先もありません")
+                            else:  # random
+                                trapped = False
+                                if "trapped" in request["active"][0]:
+                                    trapped = request["active"][0]["trapped"]
+                                switch_choices = []
+                                if not trapped and "side" in request:
+                                    side_pokemon = request["side"]["pokemon"]
+                                    for i, poke in enumerate(side_pokemon):
+                                        if not poke.get("active", False) and not poke["condition"].endswith("fnt"):
+                                            switch_choices.append(i + 1)  # 1-indexed
+                                choices = []
+                                for move in valid_moves:
+                                    choices.append(("move", move, False))
+                                for switch_index in switch_choices:
+                                    choices.append(("switch", switch_index, False))
+                                if choices:
+                                    action, value, tera = random.choice(choices)
+                                    if action == "move":
+                                        move_id = value["id"]
+                                        target = value.get("target", "")
+                                        if target in ["normal", "adjacentFoe", "adjacentAllyOrSelf", "adjacentAlly", "adjacentFoeOrAlly"]:
+                                            move_line = f"{battle_tag}|/choose move {move_id} 1\n"
+                                        else:
+                                            move_line = f"{battle_tag}|/choose move {move_id}\n"
+                                    elif action == "switch":
+                                        move_line = f"{battle_tag}|/choose switch {value}\n"
+                                    turn_count += 1
+                                    print(f"[{username}] [ターン{turn_count}] 送信コマンド: {move_line.strip()}")
+                                    await websocket.send(move_line)
+                                else:
+                                    print(f"[{username}] 有効な技も交代先もありません")
                         elif "forceSwitch" in request:
                             # 交代要求処理
                             # 交代可能なポケモンのインデックスを自動で選ぶ（最初のtrueを選択）
@@ -115,10 +146,22 @@ async def showdown_bot(username, password, opponent, is_challenger, battle_forma
                 print(f"[{username}] バトル終了")
                 break
 
+def select_random_move(valid_moves, select_type="random"):
+    """
+    select_type: "random" or "max_damage"
+    """
+    if select_type == "random":
+        return random.choice(valid_moves)
+    elif select_type == "max_damage":
+        return max(valid_moves, key=lambda x: x.get("basePower", 0))
+    else:
+        raise ValueError(f"Invalid select_type: {select_type}")
+
 async def main():
     battle_format = "gen9randombattle"
-    bot1 = showdown_bot("inf581_bot_1", "INF581_BOT_1", "inf581_bot_2", True, battle_format)
-    bot2 = showdown_bot("inf581_bot_2", "INF581_BOT_2", "inf581_bot_1", False, battle_format)
+    # デフォルト: bot1=最大ダメージ, bot2=最大ダメージ
+    bot1 = showdown_bot("inf581_bot_1", "INF581_BOT_1", "inf581_bot_2", True, battle_format, select_type="max_damage")
+    bot2 = showdown_bot("inf581_bot_2", "INF581_BOT_2", "inf581_bot_1", False, battle_format, select_type="random")
     await asyncio.gather(bot1, bot2)
 
 if __name__ == "__main__":
