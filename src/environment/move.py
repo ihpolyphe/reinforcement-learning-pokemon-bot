@@ -12,7 +12,7 @@ TODO:
 - Hidden power type
 - ZMove effects
 """
-from environment.utils import CATEGORIES, MOVES, TARGETS, TYPES, SECONDARIES
+from .utils import CATEGORIES, MOVES, TARGETS, TYPES, SECONDARIES
 
 
 empty_move = {

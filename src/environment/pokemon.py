@@ -1,38 +1,46 @@
-from environment.move import empty_move, Move, ZMoveException
-from environment.utils import MOVES, POKEDEX, TYPES, SEXES
+from .move import empty_move, Move, ZMoveException
+from .utils import MOVES, POKEDEX, TYPES, SEXES
 
-empty_pokemon = {
-    "active": False,
-    "attracted": False,
-    "base_stats": {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0},
-    "current_hp": 0,
-    "encored": False,
-    "exists": False,
-    "focused": False,
-    "infested": False,
-    "leech_seeding": False,
-    "level": 100,
-    "max_hp": 0,
-    "mega": False,
-    "moves": [empty_move for _ in range(4)],
-    "perish_count": 4,
-    "primal": False,
-    "sex": {s: False for s in SEXES},
-    "stats": {"atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0},
-    "status": {
-        "tox": False,
-        "psn": False,
-        "slp": False,
-        "par": False,
-        "brn": False,
-        "frz": False,
-        "fnt": False,
-    },
-    "substitute": False,
-    "taunted": False,
-    "type": {t: False for t in TYPES},
-    "yawned": False,
-}
+
+# 空のポケモン状態を表すクラス
+class EmptyPokemon:
+    def __init__(self):
+        self.active = False
+        self.attracted = False
+        self.base_stats = {"hp": 0, "atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}
+        self.current_hp = 0
+        self.encored = False
+        self.exists = False
+        self.focused = False
+        self.infested = False
+        self.leech_seeding = False
+        self.level = 100
+        self.max_hp = 0
+        self.mega = False
+        self.moves = [empty_move for _ in range(4)]
+        self.perish_count = 4
+        self.primal = False
+        self.sex = {s: False for s in SEXES}
+        self.stats = {"atk": 0, "def": 0, "spa": 0, "spd": 0, "spe": 0}
+        self.status = {
+            "tox": False,
+            "psn": False,
+            "slp": False,
+            "par": False,
+            "brn": False,
+            "frz": False,
+            "fnt": False,
+        }
+        self.substitute = False
+        self.taunted = False
+        self.type = {t: False for t in TYPES}
+        self.yawned = False
+
+    @property
+    def dic_state(self):
+        return self.__dict__
+
+empty_pokemon = EmptyPokemon()
 
 
 class Pokemon:

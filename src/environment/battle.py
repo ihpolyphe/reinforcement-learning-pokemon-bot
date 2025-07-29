@@ -15,7 +15,8 @@ TODO:
 - Parse turn id in parse_request
 """
 
-from environment.pokemon import empty_pokemon, Pokemon, Move
+from .pokemon import empty_pokemon, Pokemon
+from .move import Move
 from typing import List, Optional
 
 
