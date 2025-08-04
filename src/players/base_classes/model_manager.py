@@ -136,7 +136,7 @@ class ModelManager(ABC):
             name (str, defaults to None): name of the model to be loaded. If None, the 
             last saved model will be used.
         """
-        PATH = "/home/hayato/reinforcement-learning-pokemon-bot/"
+        PATH = "/home/denso/reinforcement-learning-pokemon-bot/"
         if self.MODEL_NAME is None:
             raise ValueError(
                 """self.MODEL_NAME is None. Are you sure you initialised your 

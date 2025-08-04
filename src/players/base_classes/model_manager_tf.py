@@ -148,7 +148,7 @@ class ModelManagerTF(ABC):
             model with a name attribute ?
         """
             )
-        PATH = "/home/hayato/reinforcement-learning-pokemon-bot/"
+        PATH = "/home/denso/reinforcement-learning-pokemon-bot/"
         if not os.path.isdir(os.path.join( PATH + "models", self.MODEL_NAME)):
             raise ValueError("No models to load were found.")
         

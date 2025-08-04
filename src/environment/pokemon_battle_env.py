@@ -1,14 +1,93 @@
-import gymnasium as gym
-import numpy as np
-from gymnasium import spaces
-from .battle import Battle
 import asyncio
-import websockets
 import json
 import random
 import re
 
+import gymnasium as gym
+import numpy as np
+import websockets
+from gymnasium import spaces
+
+from .battle import Battle
+
+
 class SyncShowdownClient:
+    def choose_action_from_request(self, request_str, select_type="random"):
+        """
+        battle_DQN.pyのロジックを参考に、request文字列から適切なコマンドを返す
+        select_type: "random" or "max_damage"
+        """
+        try:
+            if "|request|" not in request_str:
+                return None
+            request_json = request_str.split("|request|")[1]
+            request = json.loads(request_json)
+            # 技選択
+            if "active" in request:
+                moves = request["active"][0]["moves"]
+                valid_moves = [move for move in moves if not move.get("disabled", False)]
+                if select_type == "max_damage":
+                    if valid_moves:
+                        move = max(valid_moves, key=lambda x: x.get("basePower", 0))
+                        move_id = move["id"]
+                        target = move.get("target", "")
+                        if target in ["normal", "adjacentFoe", "adjacentAllyOrSelf", "adjacentAlly", "adjacentFoeOrAlly"]:
+                            return f"{self.battle_tag}|/choose move {move_id} 1\n"
+                        else:
+                            return f"{self.battle_tag}|/choose move {move_id}\n"
+                else:
+                    # random
+                    import random
+                    trapped = request["active"][0].get("trapped", False)
+                    switch_choices = []
+                    if not trapped and "side" in request:
+                        side_pokemon = request["side"]["pokemon"]
+                        for i, poke in enumerate(side_pokemon):
+                            if not poke.get("active", False) and not poke["condition"].endswith("fnt"):
+                                switch_choices.append(i + 1)
+                    choices = []
+                    for move in valid_moves:
+                        choices.append(("move", move, False))
+                    for switch_index in switch_choices:
+                        choices.append(("switch", switch_index, False))
+                    if choices:
+                        action, value, tera = random.choice(choices)
+                        if action == "move":
+                            move_id = value["id"]
+                            target = value.get("target", "")
+                            if target in ["normal", "adjacentFoe", "adjacentAllyOrSelf", "adjacentAlly", "adjacentFoeOrAlly"]:
+                                return f"{self.battle_tag}|/choose move {move_id} 1\n"
+                            else:
+                                return f"{self.battle_tag}|/choose move {move_id}\n"
+                        elif action == "switch":
+                            return f"{self.battle_tag}|/choose switch {value}\n"
+            # 交代要求
+            elif "forceSwitch" in request:
+                side_pokemon = request["side"]["pokemon"]
+                for i, poke in enumerate(side_pokemon):
+                    if not poke.get("active", False) and not poke["condition"].endswith("fnt"):
+                        return f"{self.battle_tag}|/choose switch {i+1}\n"
+                # 交代できるポケモンがいない場合
+                return None
+        except Exception as e:
+            print(f"[choose_action_from_request] error: {e}")
+            return None
+    @staticmethod
+    def start_battles_concurrently(client1, client2):
+        """
+        2つのSyncShowdownClientのstart_battleを同じイベントループで同時に非同期で進める
+        """
+        async def run_both():
+            await asyncio.gather(
+                client1._start_battle(),
+                client2._start_battle()
+            )
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        loop.run_until_complete(run_both())
     """
     Showdownサーバーと同期的にやりとりするラッパークラス
     """
@@ -21,7 +100,12 @@ class SyncShowdownClient:
         self.websocket = None
         self.battle_tag = None
         self.last_response = None
-        self.loop = asyncio.new_event_loop()
+        # asyncioのグローバルイベントループを使う（必ずget_event_loopのみ）
+        try:
+            self.loop = asyncio.get_event_loop()
+        except RuntimeError:
+            self.loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self.loop)
         self.joined_battle = False
         self.logged_in = False
         self.challenge_sent = False
@@ -32,53 +116,60 @@ class SyncShowdownClient:
 
     async def _start_battle(self):
         uri = "ws://127.0.0.1:8000/showdown/websocket"
-        async with websockets.connect(uri) as websocket:
-            self.websocket = websocket
-            # ログイン
-            trn_msg = f"|/trn {self.username},{self.password}\n"
-            print(f"[SyncShowdownClient] 送信: {trn_msg.strip()}")
-            await websocket.send(trn_msg)
-            while True:
-                resp = await websocket.recv()
-                print(f"[SyncShowdownClient] 受信: {resp}")
-                self.last_response = resp
-                # ログイン完了判定
-                if not self.logged_in and f"|updateuser| {self.username}" in resp:
-                    self.logged_in = True
-                    print(f"[SyncShowdownClient] ログイン完了: {self.username}")
-                # チャレンジ送信（チャレンジャーのみ）
-                if self.logged_in and self.is_challenger and not self.challenge_sent:
-                    challenge_msg = f"|/challenge {self.opponent}, {self.battle_format}\n"
-                    print(f"[SyncShowdownClient] 送信: {challenge_msg.strip()}")
-                    await websocket.send(challenge_msg)
-                    self.challenge_sent = True
-                # チャレンジ受諾（チャレンジされた側のみ）
-                if self.logged_in and not self.is_challenger and not self.accept_sent:
-                    if f"|pm| {self.opponent}| {self.username}|/challenge" in resp:
-                        accept_msg = f"|/accept {self.opponent}\n"
-                        print(f"[SyncShowdownClient] 送信: {accept_msg.strip()}")
-                        await websocket.send(accept_msg)
-                        self.accept_sent = True
-                # battle_tag（ルーム名）の取得
-                if self.battle_tag is None:
-                    m = re.search(r'"(battle-[^"]+)":"\\?\[Gen', resp)
-                    if m:
-                        self.battle_tag = m.group(1)
-                        print(f"[SyncShowdownClient] ルーム名取得: {self.battle_tag}")
-                    m2 = re.search(r'/battle-([a-z0-9\-]+)', resp)
-                    if m2:
-                        self.battle_tag = m2.group(1)
-                        print(f"[SyncShowdownClient] ルーム名取得: {self.battle_tag}")
-                # ルームにjoin
-                if self.battle_tag and not self.joined_battle:
-                    join_msg = f"|/join {self.battle_tag}\n"
-                    print(f"[SyncShowdownClient] 送信: {join_msg.strip()}")
-                    await websocket.send(join_msg)
-                    self.joined_battle = True
-                # バトル開始まで抜けない
-                if self.battle_tag and self.joined_battle:
-                    print(f"[SyncShowdownClient] バトル準備完了: {self.battle_tag}")
-                    break
+        # WebSocket接続をバトル中維持するため、インスタンス変数に保持
+        self.websocket = await websockets.connect(uri)
+        websocket = self.websocket
+        # ログイン
+        trn_msg = f"|/trn {self.username},{self.password}\n"
+        print(f"[SyncShowdownClient] 送信: {trn_msg.strip()}")
+        await websocket.send(trn_msg)
+        while True:
+            resp = await websocket.recv()
+            print(f"[SyncShowdownClient] 受信: {resp}")
+            self.last_response = resp
+            # ログイン完了判定
+            if not self.logged_in and f"|updateuser| {self.username}" in resp:
+                self.logged_in = True
+                print(f"[SyncShowdownClient] ログイン完了: {self.username}")
+            # チャレンジ送信（チャレンジャーのみ）
+            if self.logged_in and self.is_challenger and not self.challenge_sent:
+                challenge_msg = f"|/challenge {self.opponent}, {self.battle_format}\n"
+                print(f"[SyncShowdownClient] 送信: {challenge_msg.strip()}")
+                await websocket.send(challenge_msg)
+                self.challenge_sent = True
+            # チャレンジ受諾（チャレンジされた側のみ）
+            if self.logged_in and not self.is_challenger and not self.accept_sent:
+                if f"|pm| {self.opponent}| {self.username}|/challenge" in resp:
+                    accept_msg = f"|/accept {self.opponent}\n"
+                    print(f"[SyncShowdownClient] 送信: {accept_msg.strip()}")
+                    await websocket.send(accept_msg)
+                    self.accept_sent = True
+            # battle_tag（ルーム名）の取得
+            if self.battle_tag is None:
+                m = re.search(r'"(battle-[^"]+)":"\\?\[Gen', resp)
+                if m:
+                    self.battle_tag = m.group(1)
+                    print(f"[SyncShowdownClient] ルーム名取得: {self.battle_tag}")
+                m2 = re.search(r'/battle-([a-z0-9\-]+)', resp)
+                if m2:
+                    self.battle_tag = m2.group(1)
+                    print(f"[SyncShowdownClient] ルーム名取得: {self.battle_tag}")
+            # ルームにjoin
+            if self.battle_tag and not self.joined_battle:
+                join_msg = f"|/join {self.battle_tag}\n"
+                print(f"[SyncShowdownClient] 送信: {join_msg.strip()}")
+                await websocket.send(join_msg)
+                self.joined_battle = True
+            # バトル開始まで抜けない
+            if self.battle_tag and self.joined_battle:
+                print(f"[SyncShowdownClient] バトル準備完了: {self.battle_tag}")
+                break
+
+    def close(self):
+        # バトル終了時にWebSocketをクローズ
+        if self.websocket is not None:
+            self.loop.run_until_complete(self.websocket.close())
+            self.websocket = None
 
     def send_action(self, action_cmd):
         self.loop.run_until_complete(self._send_action(action_cmd))
@@ -106,7 +197,8 @@ class PokemonBattleEnv(gym.Env):
         self.max_moves = 4
         self.max_switches = 5
         self.action_space = spaces.Discrete(self.max_moves + self.max_switches)
-        self.observation_space = spaces.Box(low=0, high=1, shape=(8,), dtype=np.float32)
+        # 特徴量10次元に合わせてshapeを修正
+        self.observation_space = spaces.Box(low=0, high=1, shape=(10,), dtype=np.float32)
         self.battle = None
         self.state = None
         self.client = None
@@ -116,7 +208,7 @@ class PokemonBattleEnv(gym.Env):
     def reset(self, seed=None, options=None):
         print("[LOG] PokemonBattleEnv.reset start")
         super().reset(seed=seed)
-        print("[LOG] SyncShowdownClient生成")
+        print("[LOG] SyncShowdownClient生成 (bot1)")
         self.client = SyncShowdownClient(
             username="inf581_bot_1",
             password="INF581_BOT_1",
@@ -124,8 +216,16 @@ class PokemonBattleEnv(gym.Env):
             is_challenger=True,
             battle_format="gen9randombattle"
         )
-        print("[LOG] start_battle呼び出し前")
-        self.client.start_battle()
+        print("[LOG] SyncShowdownClient生成 (bot2)")
+        self.client2 = SyncShowdownClient(
+            username="inf581_bot_2",
+            password="INF581_BOT_2",
+            opponent="inf581_bot_1",
+            is_challenger=False,
+            battle_format="gen9randombattle"
+        )
+        print("[LOG] start_battle呼び出し前 (両bot並列)")
+        SyncShowdownClient.start_battles_concurrently(self.client, self.client2)
         print("[LOG] start_battle呼び出し後")
         self.battle = Battle(battle_tag=self.client.battle_tag or "test-0001", player_name="inf581_bot_1")
         print("[LOG] Battleインスタンス生成後")
@@ -142,13 +242,32 @@ class PokemonBattleEnv(gym.Env):
 
     def step(self, action_idx):
         print(f"[LOG] step start action_idx={action_idx}")
-        # action_idx→コマンド変換
-        if action_idx < len(self.valid_actions):
-            action_cmd = self.valid_actions[action_idx]
-        else:
-            action_cmd = self.valid_actions[0]  # fallback
-        print(f"[LOG] send_action: {action_cmd}")
+        # bot1の行動
+        # サーバーからのリクエストを取得
+        req1 = self.client.get_last_response()
+        action_cmd = None
+        if req1 and "|request|" in req1:
+            action_cmd = self.client.choose_action_from_request(req1, select_type="max_damage")
+        if not action_cmd:
+            # fallback: 有効なアクション
+            if action_idx < len(self.valid_actions):
+                action_cmd = self.valid_actions[action_idx]
+            else:
+                action_cmd = self.valid_actions[0]
+        print(f"[LOG] send_action (bot1): {action_cmd}")
         self.client.send_action(action_cmd)
+
+        # bot2の行動（requestに応じて）
+        action_cmd2 = None
+        if hasattr(self, 'client2') and self.client2:
+            req2 = self.client2.get_last_response()
+            if req2 and "|request|" in req2:
+                action_cmd2 = self.client2.choose_action_from_request(req2, select_type="random")
+            if not action_cmd2:
+                action_cmd2 = f"{self.client2.battle_tag or 'test-0001'}|/choose move 1\n"
+            print(f"[LOG] send_action (bot2): {action_cmd2}")
+            self.client2.send_action(action_cmd2)
+
         # サーバーからのレスポンスをparseしてBattleに反映
         if self.client.get_last_response():
             print("[LOG] step parse_message呼び出し前")
@@ -160,6 +279,12 @@ class PokemonBattleEnv(gym.Env):
         terminated = self._is_done(self.battle)
         truncated = False
         self.valid_actions = self._make_valid_actions(self.battle)
+        # バトル終了時にWebSocketをクローズ
+        if terminated:
+            if hasattr(self.client, 'close'):
+                self.client.close()
+            if hasattr(self, 'client2') and hasattr(self.client2, 'close'):
+                self.client2.close()
         print("[LOG] step end")
         info = {"valid_actions": self.valid_actions}
         return self.state, reward, terminated, truncated, info

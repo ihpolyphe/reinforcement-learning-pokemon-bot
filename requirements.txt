@@ -49,3 +49,4 @@ stable-baselines3
 gymnasium
 
 torch
+websockets

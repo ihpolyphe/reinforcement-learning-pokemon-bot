@@ -11,7 +11,7 @@ import json
 import numpy as np
 
 from typing import Generator
-PATH = "/home/hayato/reinforcement-learning-pokemon-bot/"
+PATH = "/home/denso/reinforcement-learning-pokemon-bot/"
 
 CATEGORIES = ["Physical", "Special", "Status"]
 """List of str: move categories"""
